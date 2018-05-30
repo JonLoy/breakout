@@ -29,7 +29,7 @@ function PlayState:enter(params)
     self.ball = params.ball
     self.level = params.level
 
-    self.recoverPoints = 5000
+    self.recoverPoints = params.recoverPoints
 
     -- give ball random starting velocity
     self.ball.dx = math.random(-200, 200)
