@@ -28,6 +28,8 @@ function Ball:init(skin)
     -- this will effectively be the color of our ball, and we will index
     -- our table of Quads relating to the global block texture using this
     self.skin = skin
+
+    self.inPlay = false 
 end
 
 --[[
@@ -49,16 +51,6 @@ function Ball:collides(target)
 
     -- if the above aren't true, they're overlapping
     return true
-end
-
---[[
-    Places the ball in the middle of the screen, with no movement.
-]]
-function Ball:reset()
-    self.x = VIRTUAL_WIDTH / 2 - 2
-    self.y = VIRTUAL_HEIGHT / 2 - 2
-    self.dx = 0
-    self.dy = 0
 end
 
 function Ball:update(dt)
@@ -88,6 +80,8 @@ end
 function Ball:render()
     -- gTexture is our global texture for all blocks
     -- gBallFrames is a table of quads mapping to each individual ball skin in the texture
-    love.graphics.draw(gTextures['main'], gFrames['balls'][self.skin],
-        self.x, self.y)
+    if self.inPlay then 
+        love.graphics.draw(gTextures['main'], gFrames['balls'][self.skin],
+            self.x, self.y)
+    end
 end

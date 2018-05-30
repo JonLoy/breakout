@@ -106,9 +106,9 @@ function Brick:hit()
 
     -- if we're at a higher tier than the base, we need to go down a tier
     if self.tier > 0 then
-            self.tier = self.tier - 1
+        self.tier = self.tier - 1
     else
-            self.inPlay = false
+        self.inPlay = false
     end
 
     -- play a second layer sound if the brick is destroyed
