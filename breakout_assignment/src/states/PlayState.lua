@@ -97,6 +97,10 @@ function PlayState:update(dt)
 
                 -- play recover sound effect
                 gSounds['recover']:play()
+                if self.paddle.size < 4 then
+                    self.paddle.size = self.paddle.size + 1
+                    self.paddle.width = self.paddle.width + 32
+                end
             end
 
             -- go to our victory screen if there are no more bricks left
@@ -167,6 +171,10 @@ function PlayState:update(dt)
     -- if ball goes below bounds, revert to serve state and decrease health
     if self.ball.y >= VIRTUAL_HEIGHT then
         self.health = self.health - 1
+        if self.paddle.size > 1 then
+            self.paddle.size = self.paddle.size - 1
+            self.paddle.width = self.paddle.width - 32
+        end
         gSounds['hurt']:play()
 
         if self.health == 0 then
