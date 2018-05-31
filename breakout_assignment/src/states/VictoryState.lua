@@ -21,13 +21,9 @@ function VictoryState:enter(params)
     self.health = params.health
     self.balls = params.balls
     self.recoverPoints = params.recoverPoints
-    counter = 1
-    for k, ball in pairs(self.balls) do
-        if counter > 1 then
-            ball.inPlay = false 
-        end
-        counter = counter + 1
-    end
+    ball = Ball()
+    ball.skin = math.random(7)
+    self.balls = {ball}
 end
 
 function VictoryState:update(dt)

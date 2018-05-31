@@ -28,20 +28,15 @@ function PlayState:enter(params)
     self.highScores = params.highScores
     self.balls = params.balls
     self.level = params.level
+    self.powered = false
 
     self.recoverPoints = params.recoverPoints
 
     -- give ball random starting velocity
-    counter = 1
     for k, ball in pairs(self.balls) do
         ball.dx = math.random(-200, 200)
         ball.dy = math.random(-50, -60)
-        if counter == 1 then
-            ball.inPlay = true
-        else
-            ball.inPlay = false
-        end
-        counter = counter + 1
+        ball.inPlay = true
     end
 end
 
@@ -59,12 +54,37 @@ function PlayState:update(dt)
         return
     end
 
-    -- update positions based on velocity
     self.paddle:update(dt)
-    for k, ball in pairs(self.balls) do
-        if self.score % 2000 == 0 then
-            ball.inPlay = true
+
+    if self.score > 0 and self.score % 25 == 0 and self.powerup == nil and self.powered == false then
+        powerup = Powerup()
+        powerup.skin = math.random(8)
+        self.powerup = powerup
+    end
+
+    if self.powerup then 
+        self.powerup:update(dt)
+        if self.powerup:collides(self.paddle) then
+            self.powered = true
+            self.powerup = nil 
         end
+    end
+
+    if self.powered then
+        for i = 0,1 do 
+            ball = Ball()
+            ball.skin = math.random(7)
+            ball.x = self.paddle.x + (self.paddle.width / 2) - 4
+            ball.y = self.paddle.y - 8
+            ball.dx = math.random(-200, 200)
+            ball.dy = math.random(-50, -60)
+            ball.inPlay = true
+            table.insert(self.balls, ball)
+        end
+        self.powered = false
+    end
+
+    for k, ball in pairs(self.balls) do
 
         if ball.inPlay then 
             ball:update(dt)
@@ -128,7 +148,6 @@ function PlayState:update(dt)
                             health = self.health,
                             score = self.score,
                             highScores = self.highScores,
-                            balls = self.balls,
                             recoverPoints = self.recoverPoints
                         })
                     end
@@ -185,33 +204,36 @@ function PlayState:update(dt)
 
             -- if ball goes below bounds, revert to serve state and decrease health
             if ball.y >= VIRTUAL_HEIGHT then
-                self.health = self.health - 1
-                if self.paddle.size > 1 then
-                    self.paddle.size = self.paddle.size - 1
-                    self.paddle.width = self.paddle.width - 32
-                end
-                ball.inPlay = false
-                gSounds['hurt']:play()
-
-                if self.health == 0 then
-                    gStateMachine:change('game-over', {
-                        score = self.score,
-                        highScores = self.highScores
-                    })
-                else
-                    gStateMachine:change('serve', {
-                        paddle = self.paddle,
-                        bricks = self.bricks,
-                        health = self.health,
-                        score = self.score,
-                        highScores = self.highScores,
-                        level = self.level,
-                        recoverPoints = self.recoverPoints
-                    })
-                end
+               table.remove(self.balls, k) 
             end
         end
     end
+
+    if table.maxn(self.balls) < 1 then
+         self.health = self.health - 1
+         if self.paddle.size > 1 then
+             self.paddle.size = self.paddle.size - 1
+             self.paddle.width = self.paddle.width - 32
+         end
+         gSounds['hurt']:play()
+
+         if self.health == 0 then
+             gStateMachine:change('game-over', {
+                 score = self.score,
+                 highScores = self.highScores
+             })
+         else
+             gStateMachine:change('serve', {
+                 paddle = self.paddle,
+                 bricks = self.bricks,
+                 health = self.health,
+                 score = self.score,
+                 highScores = self.highScores,
+                 level = self.level,
+                 recoverPoints = self.recoverPoints
+             })
+         end
+    end 
 
     -- for rendering particle systems
     for k, brick in pairs(self.bricks) do
@@ -238,6 +260,15 @@ function PlayState:render()
 
     for k, ball in pairs(self.balls) do
        ball:render()
+    end
+
+    if self.powerup ~= nil then
+        self.powerup:render()
+    end
+
+    if self.powered then
+        love.graphics.setFont(gFonts['large'])
+        love.graphics.printf("POWERED", 0, VIRTUAL_HEIGHT / 2 - 16, VIRTUAL_WIDTH, 'center')
     end
 
     renderScore(self.score)
