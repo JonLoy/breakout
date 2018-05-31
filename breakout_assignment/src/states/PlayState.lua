@@ -29,7 +29,7 @@ function PlayState:enter(params)
     self.balls = params.balls
     self.level = params.level
     self.powered = false
-
+    self.powerup_time = love.timer.getTime()
     self.recoverPoints = params.recoverPoints
 
     -- give ball random starting velocity
@@ -56,10 +56,12 @@ function PlayState:update(dt)
 
     self.paddle:update(dt)
 
-    if self.score > 0 and self.score % 25 == 0 and self.powerup == nil and self.powered == false then
+    local now = love.timer.getTime()
+    if now - self.powerup_time > math.random(10,25) and self.powered == false then
         powerup = Powerup()
         powerup.skin = math.random(8)
         self.powerup = powerup
+        self.powerup_time = love.timer.getTime() 
     end
 
     if self.powerup then 
@@ -70,7 +72,7 @@ function PlayState:update(dt)
         end
     end
 
-    if self.powered then
+    if self.powered and table.maxn(self.balls) == 1 then
         for i = 0,1 do 
             ball = Ball()
             ball.skin = math.random(7)
@@ -209,7 +211,10 @@ function PlayState:update(dt)
         end
     end
 
-    if table.maxn(self.balls) < 1 then
+    num_balls = table.maxn(self.balls)
+    if num_balls > 1 then  
+       self.powerup_time = love.timer.getTime()
+    elseif num_balls < 1 then
          self.health = self.health - 1
          if self.paddle.size > 1 then
              self.paddle.size = self.paddle.size - 1
@@ -264,11 +269,6 @@ function PlayState:render()
 
     if self.powerup ~= nil then
         self.powerup:render()
-    end
-
-    if self.powered then
-        love.graphics.setFont(gFonts['large'])
-        love.graphics.printf("POWERED", 0, VIRTUAL_HEIGHT / 2 - 16, VIRTUAL_WIDTH, 'center')
     end
 
     renderScore(self.score)
